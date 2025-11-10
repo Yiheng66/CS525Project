@@ -9,6 +9,7 @@ from itertools import count
 import matplotlib.pyplot as plt 
 import pygame as pg
 import math
+import os
 
 class SNNAgent():
     def __init__(self, BATCH_SIZE, MEMORY_SIZE, GAMMA, input_dim, output_dim, action_dim, action_dict, EPS_START, EPS_END, EPS_DECAY_VALUE, lr, TAU, network_type='DDQN', T=25):
@@ -23,14 +24,13 @@ class SNNAgent():
         self.eps = EPS_START
         self.TAU = TAU
         
-        self.network_type = network_type # <-- FIX: Save the network_type attribute
-        self.episode_durations = [] # <-- FIX: Add list for plotting
+        self.network_type = network_type
+        self.episode_durations = []
 
         # replay buffer
         self.memory = MemoryRecall.MemoryRecall(memory_size=MEMORY_SIZE)
 
         # Create ANN base + wrap into SNN
-        
         ann_policy = model.DQN(input_dim, output_dim, network_type)
         ann_target = model.DQN(input_dim, output_dim, network_type)
 
@@ -43,6 +43,73 @@ class SNNAgent():
         self.target_net.load_state_dict(self.policy_net.state_dict())
 
         self.optimizer = optim.AdamW(self.policy_net.parameters(), lr=lr, amsgrad=True)
+
+    def save_checkpoint(self, episode, checkpoint_path=None):
+        """
+        Save complete training checkpoint including networks, optimizer, and training state
+        
+        Args:
+            episode: Current episode number
+            checkpoint_path: Path to save checkpoint (default: {network_type}_SNN_checkpoint.pt)
+        """
+        if checkpoint_path is None:
+            checkpoint_path = f"{self.network_type}_SNN_checkpoint.pt"
+        
+        checkpoint = {
+            'episode': episode,
+            'policy_net_state_dict': self.policy_net.state_dict(),
+            'target_net_state_dict': self.target_net.state_dict(),
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'epsilon': self.eps,
+            'episode_durations': self.episode_durations,
+            'network_type': self.network_type,
+            'BATCH_SIZE': self.BATCH_SIZE,
+            'GAMMA': self.GAMMA,
+            'TAU': self.TAU
+        }
+        
+        torch.save(checkpoint, checkpoint_path)
+        print(f"✓ Saved checkpoint at episode {episode} (eps={self.eps:.3f})")
+
+    def load_checkpoint(self, checkpoint_path=None):
+        """
+        Load complete training checkpoint to resume training
+        
+        Args:
+            checkpoint_path: Path to checkpoint file (default: {network_type}_SNN_checkpoint.pt)
+        
+        Returns:
+            int: Episode number to resume from, or 0 if loading failed
+        """
+        if checkpoint_path is None:
+            checkpoint_path = f"{self.network_type}_SNN_checkpoint.pt"
+        
+        try:
+            if not os.path.exists(checkpoint_path):
+                print(f"Checkpoint file not found: {checkpoint_path}")
+                return 0
+            
+            checkpoint = torch.load(checkpoint_path, map_location=self.device)
+            
+            # Load network states
+            self.policy_net.load_state_dict(checkpoint['policy_net_state_dict'])
+            self.target_net.load_state_dict(checkpoint['target_net_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            
+            # Restore training state
+            self.eps = checkpoint['epsilon']
+            self.episode_durations = checkpoint['episode_durations']
+            episode = checkpoint['episode']
+            
+            print(f"✓ Loaded checkpoint from episode {episode}")
+            print(f"  Epsilon: {self.eps:.3f}")
+            print(f"  Episodes completed: {len(self.episode_durations)}")
+            
+            return episode + 1  # Return next episode to start from
+            
+        except Exception as e:
+            print(f"Error loading checkpoint: {e}")
+            return 0
 
     def take_action(self, state):
         # epsilon decay
@@ -65,15 +132,12 @@ class SNNAgent():
         plt.title('Training...')
         plt.xlabel('Episode')
         plt.ylabel('Duration')
-        #Plot the durations
         plt.plot(durations_t.numpy())
-        # Take 100 episode averages of the durations and plot them too, to show a running average on the graph
         if len(durations_t) >= 100:
             means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
             means = torch.cat((torch.zeros(99), means))
             plt.plot(means.numpy())
-        plt.pause(0.001)  # pause a bit so that plots are updated
-        # Use the SNN-specific name for saving the plot
+        plt.pause(0.001)
         plt.savefig(self.network_type + '_SNN_training.png')
 
     def optimize_model(self):
@@ -109,8 +173,16 @@ class SNNAgent():
         for param_tgt, param_src in zip(self.target_net.parameters(), self.policy_net.parameters()):
             param_tgt.data.copy_(param_tgt.data * (1 - self.TAU) + param_src.data * self.TAU)
 
-    def train(self, episodes, env):
-        for episode in range(episodes):
+    def train(self, episodes, env, start_episode=0):
+        """
+        Train the agent
+        
+        Args:
+            episodes: Total number of episodes to train
+            env: Environment to train in
+            start_episode: Episode number to start from (useful when resuming)
+        """
+        for episode in range(start_episode, episodes):
             env.reset_game()
             state = env.getGameState()
             state = torch.tensor(list(state.values()), dtype=torch.float32, device=self.device)
@@ -143,7 +215,11 @@ class SNNAgent():
                     
                     print(f"Episode {episode} | Steps: {t+1} | Score: {env.score()} | Eps: {self.eps:.3f}")
                     
-                    network_type = self.network_type + '_SNN' 
-                    torch.save(self.target_net.state_dict(), network_type + '_target_net.pt')
-                    torch.save(self.policy_net.state_dict(), network_type + '_policy_net.pt')
+                    # Save checkpoint every 100 episodes
+                    if episode % 100 == 0:  
+                        self.save_checkpoint(episode)
+                        # Also save separate weight files for compatibility
+                        network_type = self.network_type + '_SNN' 
+                        torch.save(self.target_net.state_dict(), network_type + '_target_net.pt')
+                        torch.save(self.policy_net.state_dict(), network_type + '_policy_net.pt')
                     break
