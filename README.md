@@ -1,12 +1,13 @@
 # flappy_bird_ANN_SSN_Comparison
 
 ##Requirements:
-#Python 3.12
+Python 3.12
 
-#Pytorch 2.8
+Pytorch 2.8
 
-#ssntorch - pip install snntorch
+ssntorch - pip install snntorch
 
-#matplotlib - pip install matplotlib
+matplotlib - pip install matplotlib
+
 
 
