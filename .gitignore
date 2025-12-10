@@ -2,5 +2,4 @@ flappybird_env/*
 flappy_bird.mov
 Flappy_Bird_edit.mp4
 __pycache__/
-.vscode/
 .DS_Store

@@ -130,6 +130,7 @@ class SNN_DQN(nn.Module):
 
         q_accum = torch.zeros(batch, self.output_dim, device=self.device)
         total_spikes = 0
+        total_spikes = 0
 
         for t in range(self.T):
             # Encoding: either Poisson spike coding or repeated analog input
@@ -156,6 +157,11 @@ class SNN_DQN(nn.Module):
                     spk1.sum() + spk2.sum() + spk3.sum() + spk4.sum() + spk5.sum()
                 )
 
+            if return_spike_stats:
+                total_spikes += (
+                    spk1.sum() + spk2.sum() + spk3.sum() + spk4.sum() + spk5.sum()
+                )
+
             if self.network_type == 'DuelingDQN':
                 state_val = self.state_values(spk5)
                 adv = self.advantages(spk5)
@@ -169,6 +175,17 @@ class SNN_DQN(nn.Module):
 
         if not return_spike_stats:
             return q_avg
+
+        if not return_spike_stats:
+            return q_avg
+
+        hidden_neurons = 64 + 128 + 256 + 512 + 512
+        total_neuron_slots = batch * self.T * hidden_neurons
+        return q_avg, {
+            "total_spikes": total_spikes.item(),
+            "total_neuron_slots": int(total_neuron_slots),
+            "T": self.T,
+        }
 
         hidden_neurons = 64 + 128 + 256 + 512 + 512
         total_neuron_slots = batch * self.T * hidden_neurons
@@ -341,3 +358,4 @@ class SNNAgent:
                     torch.save(self.policy_net.state_dict(), self.network_type + '_CustomSNN_policy_net.pt')
                     self.plot_durations()
                     break
+

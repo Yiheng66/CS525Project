@@ -219,7 +219,11 @@ class SNNAgent():
                     if episode % 100 == 0:  
                         self.save_checkpoint(episode)
                         # Also save separate weight files for compatibility
+<<<<<<< HEAD
                         network_type = self.network_type + '_snnTorch_SNN' 
+=======
+                        network_type = self.network_type + '_SNN' 
+>>>>>>> 73cba891ae73b33028d30f17a9476a4e1768a566
                         torch.save(self.target_net.state_dict(), network_type + '_target_net.pt')
                         torch.save(self.policy_net.state_dict(), network_type + '_policy_net.pt')
                     break
