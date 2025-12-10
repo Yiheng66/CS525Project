@@ -1,6 +1,7 @@
 import os
 import sys
-sys.path.append("./PyGame-Learning-Environment")
+# Prefer local copy of PyGame-Learning-Environment if available
+sys.path.insert(0, "./PyGame-Learning-Environment")
 import pygame as pg
 from ple import PLE 
 from ple.games.flappybird import FlappyBird

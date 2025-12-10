@@ -29,7 +29,7 @@ class SNN_DQN(nn.Module):
         self.lif4 = snn.Leaky(beta=beta, spike_grad=spike_grad)
         self.lif5 = snn.Leaky(beta=beta, spike_grad=spike_grad)
 
-    def forward(self, x):
+    def forward(self, x, return_spike_stats: bool = False):
         batch = x.size(0)
 
         mem1 = torch.zeros(batch, self.layer1.out_features, device=x.device)
@@ -39,6 +39,7 @@ class SNN_DQN(nn.Module):
         mem5 = torch.zeros(batch, self.layer5.out_features, device=x.device)
 
         out_sum = 0
+        total_spikes = 0
 
         for _ in range(self.T):
             spk1, mem1 = self.lif1(self.layer1(x), mem1)
@@ -46,6 +47,11 @@ class SNN_DQN(nn.Module):
             spk3, mem3 = self.lif3(self.layer3(spk2), mem3)
             spk4, mem4 = self.lif4(self.layer4(spk3), mem4)
             spk5, mem5 = self.lif5(self.layer5(spk4), mem5)
+
+            if return_spike_stats:
+                total_spikes += (
+                    spk1.sum() + spk2.sum() + spk3.sum() + spk4.sum() + spk5.sum()
+                )
 
             if hasattr(self, "state_values"):
                 v = self.state_values(spk5)
@@ -56,4 +62,22 @@ class SNN_DQN(nn.Module):
 
             out_sum += q
 
-        return out_sum / self.T
+        q_avg = out_sum / self.T
+
+        if not return_spike_stats:
+            return q_avg
+
+        # Total number of neuron slots across all hidden layers and timesteps
+        hidden_neurons = (
+            self.layer1.out_features
+            + self.layer2.out_features
+            + self.layer3.out_features
+            + self.layer4.out_features
+            + self.layer5.out_features
+        )
+        total_neuron_slots = batch * self.T * hidden_neurons
+        return q_avg, {
+            "total_spikes": total_spikes.item(),
+            "total_neuron_slots": int(total_neuron_slots),
+            "T": self.T,
+        }
