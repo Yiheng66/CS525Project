@@ -6,7 +6,8 @@ This matches the architecture of the provided DuelingDQN_policy_net.pt (8 inputs
 
 import sys
 import os
-sys.path.append("./PyGame-Learning-Environment")
+# Prefer local copy of PyGame-Learning-Environment if available
+sys.path.insert(0, "./PyGame-Learning-Environment")
 import pygame as pg
 from ple import PLE
 from ple.games.flappybird import FlappyBird
