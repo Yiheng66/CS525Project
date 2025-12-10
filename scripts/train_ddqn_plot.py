@@ -133,7 +133,7 @@ def main() -> None:
     plt.grid(alpha=0.2)
     plt.legend()
     plt.tight_layout()
-    plt.savefig("DuelingDDQN_training_10000_episodes.png")
+    plt.savefig("plots/DuelingDDQN_training_10000_episodes.png")
     print("Saved training curve to DuelingDDQN_training.png")
 
 

@@ -15,7 +15,7 @@ from itertools import count
 import pygame as pg
 
 # import your MemoryRecall module (same as agent.py)
-import MemoryRecall
+from src import MemoryRecall
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -354,8 +354,8 @@ class SNNAgent:
                     print(f"Episode {episode} | Steps: {c+1} | Score: {env.score()} | Eps: {self.eps:.3f}")
                     # save networks
                     print("Saving SNN model weights and training plot...")
-                    torch.save(self.target_net.state_dict(), self.network_type + '_CustomSNN_target_net.pt')
-                    torch.save(self.policy_net.state_dict(), self.network_type + '_CustomSNN_policy_net.pt')
+                    torch.save(self.target_net.state_dict(), "models/" + self.network_type + '_CustomSNN_target_net.pt')
+                    torch.save(self.policy_net.state_dict(), "models/" + self.network_type + '_CustomSNN_policy_net.pt')
                     self.plot_durations()
                     break
 

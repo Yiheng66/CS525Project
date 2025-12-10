@@ -13,9 +13,9 @@ sys.path.insert(0, "./PyGame-Learning-Environment")
 from ple import PLE  # type: ignore
 from ple.games.flappybird import FlappyBird  # type: ignore
 
-import agent
-import ssnagent
-import ann2snnagent
+from src import agent
+from src import ssnagent
+from src import ann2snnagent
 
 
 def make_env(display: bool = False) -> Tuple[PLE, dict, dict]:
@@ -95,8 +95,8 @@ def build_snn_agent(input_dim: int, n_actions: int) -> ssnagent.SNNAgent:
     # snn_agent.target_net.eval()
     
     # Prefer custom SNN weights (trained via train_snn_snnTorch.py), fall back to ANN weights if needed.
-    custom_weights_path = "SNN_snnTorch_policy_net.pt"
-    ann_weights_path = "DuelingDQN_policy_net.pt"
+    custom_weights_path = "models/SNN_snnTorch_policy_net.pt"
+    ann_weights_path = "models/DuelingDQN_policy_net.pt"
 
     if os.path.exists(custom_weights_path):
         print(f"Custom SNN: loading SNN weights from {custom_weights_path}...")
@@ -150,8 +150,8 @@ def build_custom_snn_agent(input_dim: int, n_actions: int) -> ann2snnagent.SNNAg
     )
 
     # Prefer custom SNN weights (trained via train_custom_snn_plot.py), fall back to ANN weights if needed.
-    custom_weights_path = "CustomSNN_policy_net.pt"
-    ann_weights_path = "DuelingDQN_policy_net.pt"
+    custom_weights_path = "models/CustomSNN_policy_net.pt"
+    ann_weights_path = "models/DuelingDQN_policy_net.pt"
 
     if os.path.exists(custom_weights_path):
         print(f"Custom SNN: loading SNN weights from {custom_weights_path}...")
@@ -248,11 +248,11 @@ def main() -> None:
 
     # Evaluate ANN baselines: Dueling DQN and (if available) Dueling DDQN
     env, action_dict, _ = make_env(display=False)
-    ann_agent = build_ann_agent(input_dim, n_actions, "DuelingDQN_policy_net.pt", "Dueling DQN")
+    ann_agent = build_ann_agent(input_dim, n_actions, "models/DuelingDQN_policy_net.pt", "Dueling DQN")
     evaluate_agent("ANN Dueling DQN", ann_agent, env, action_dict, ann_agent.device, episodes=50)
 
-    if os.path.exists("DuelingDDQN_policy_net.pt"):
-        ddqn_agent = build_ann_agent(input_dim, n_actions, "DuelingDDQN_policy_net.pt", "Dueling DDQN")
+    if os.path.exists("models/DuelingDDQN_policy_net.pt"):
+        ddqn_agent = build_ann_agent(input_dim, n_actions, "models/DuelingDDQN_policy_net.pt", "Dueling DDQN")
         evaluate_agent("ANN Dueling DDQN", ddqn_agent, env, action_dict, ddqn_agent.device, episodes=50)
 
     # Evaluate snnTorch-based SNN

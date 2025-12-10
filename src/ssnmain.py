@@ -4,7 +4,7 @@ sys.path.insert(0, "./PyGame-Learning-Environment")
 import pygame
 from ple import PLE
 from ple.games.flappybird import FlappyBird
-import ssnagent
+from src import ssnagent
 
 game = FlappyBird(width=256, height=256)
 env = PLE(game, display_screen=False)

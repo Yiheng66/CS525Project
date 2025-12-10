@@ -17,6 +17,7 @@ import torch
 # local imports
 import ann2snnagent
 
+raise ImportError("Cannot import model module. Ensure correct path.")
 def get_state_vector(env):
     """
     Extracts the game state features (8 values) instead of an image.
@@ -63,7 +64,7 @@ def main():
     # ------------------------------------------------------
     # Load ANN weights
     # ------------------------------------------------------
-    weights_path = "DuelingDQN_policy_net.pt"
+    weights_path = "models/DuelingDQN_policy_net.pt"
     
     if os.path.exists(weights_path):
         print(f"Loading ANN weights from {weights_path}...")

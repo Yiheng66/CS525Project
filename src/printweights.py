@@ -1,12 +1,12 @@
 import torch
-from model import DQN
+from src.model import DQN
 
 # --- Configuration ---
 # adjust based on how you trained your model
 network_type = 'DuelingDQN'     # or 'DQN' / 'DDQN'
 input_dim = 8                   # number of input features (len(state))
 output_dim = 2                  # number of possible actions
-weights_path = f"{network_type}_policy_net.pt"  # or target_net if you prefer
+weights_path = f"models/{network_type}_policy_net.pt"  # or target_net if you prefer
 
 # --- Load model ---
 model = DQN(input_dim=input_dim, output_dim=output_dim, network_type=network_type)

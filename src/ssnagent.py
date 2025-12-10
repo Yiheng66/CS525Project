@@ -1,9 +1,9 @@
 import torch
-import snnmodel
-import MemoryRecall
+from src import snnmodel
+from src import MemoryRecall
 import random
 import numpy as np
-import model
+from src import model
 import torch.optim as optim
 from itertools import count
 import matplotlib.pyplot as plt 
@@ -53,7 +53,7 @@ class SNNAgent():
             checkpoint_path: Path to save checkpoint (default: {network_type}_SNN_checkpoint.pt)
         """
         if checkpoint_path is None:
-            checkpoint_path = f"{self.network_type}_SNN_checkpoint.pt"
+            checkpoint_path = f"models/{self.network_type}_SNN_checkpoint.pt"
         
         checkpoint = {
             'episode': episode,
@@ -82,7 +82,7 @@ class SNNAgent():
             int: Episode number to resume from, or 0 if loading failed
         """
         if checkpoint_path is None:
-            checkpoint_path = f"{self.network_type}_SNN_checkpoint.pt"
+            checkpoint_path = f"models/{self.network_type}_SNN_checkpoint.pt"
         
         try:
             if not os.path.exists(checkpoint_path):
@@ -220,6 +220,6 @@ class SNNAgent():
                         self.save_checkpoint(episode)
                         # Also save separate weight files for compatibility
                         network_type = self.network_type + '_snnTorch_SNN' 
-                        torch.save(self.target_net.state_dict(), network_type + '_target_net.pt')
-                        torch.save(self.policy_net.state_dict(), network_type + '_policy_net.pt')
+                        torch.save(self.target_net.state_dict(), "models/" + network_type + '_target_net.pt')
+                        torch.save(self.policy_net.state_dict(), "models/" + network_type + '_policy_net.pt')
                     break

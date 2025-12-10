@@ -10,8 +10,8 @@ takes actions, and trains the model
 '''
 
 import torch
-import model
-import MemoryRecall
+from src import model
+from src import MemoryRecall
 import numpy as np
 import random
 from itertools import count
@@ -167,8 +167,8 @@ class Agent():
                     print("EPS: {}".format(self.eps))
                     print("Durations: {}".format(c+1))
                     print("Score: {}".format(env.score()))
-                    torch.save(self.target_net.state_dict(), self.network_type+'_target_net.pt')
-                    torch.save(self.policy_net.state_dict(), self.network_type+'_policy_net.pt')
+                    torch.save(self.target_net.state_dict(), "models/" + self.network_type + "_target_net.pt")
+                    torch.save(self.policy_net.state_dict(), "models/" + self.network_type + "_policy_net.pt")
                     #Start a new episode
                     break
 

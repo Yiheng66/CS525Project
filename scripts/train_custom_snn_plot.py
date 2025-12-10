@@ -1,8 +1,8 @@
 import sys
 import time
+import os
 
 import torch
-import os
 import matplotlib.pyplot as plt
 
 # Prefer local copy of PyGame-Learning-Environment
@@ -11,7 +11,7 @@ sys.path.insert(0, "./PyGame-Learning-Environment")
 from ple import PLE  # type: ignore
 from ple.games.flappybird import FlappyBird  # type: ignore
 
-import ssnagent
+import ann2snnagent
 
 
 def make_env(display: bool = False) -> PLE:
@@ -22,26 +22,35 @@ def make_env(display: bool = False) -> PLE:
     return env
 
 
+def get_state_vector(env: PLE) -> torch.Tensor:
+    """Extract the 8-D feature vector from the PLE environment."""
+    state_dict = env.getGameState()
+    return torch.tensor(list(state_dict.values()), dtype=torch.float32)
+
+
 def main() -> None:
     # -------------------------------
     # 1. Training configuration
     # -------------------------------
-    NUM_EPISODES = 500  # reduced for faster experiment
+    NUM_EPISODES = 200  # reduced for faster experiment
 
     env = make_env(display=False)
-    state = env.getGameState()
-    input_dim = len(state)
 
     actions = env.getActionSet()
     action_dict = {0: actions[1], 1: actions[0]}
     n_actions = len(action_dict)
 
+    test_input = get_state_vector(env)
+    input_dim = test_input.shape[0]
+
+    print(f"Custom SNN: state feature dimension = {input_dim}")
+
     # -------------------------------
-    # 2. Create snnTorch-based SNN agent
+    # 2. Create custom LIF SNN agent
     # -------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    agent = ssnagent.SNNAgent(
+    agent = ann2snnagent.SNNAgent(
         BATCH_SIZE=32,
         MEMORY_SIZE=100000,
         GAMMA=0.99,
@@ -49,17 +58,18 @@ def main() -> None:
         output_dim=n_actions,
         action_dim=n_actions,
         action_dict=action_dict,
-        EPS_START=1.0,
-        EPS_END=0.05,
+        EPS_START=0.1,
+        EPS_END=0.01,
         EPS_DECAY_VALUE=0.999995,
         lr=1e-4,
         TAU=0.005,
+        T=20,
         network_type="DuelingDQN",
-        T=25,
+        device=device,
     )
-    
-    # Load ANN weights into the snnTorch SNN if available
-    weights_path = "DuelingDDQN_policy_net.pt"
+
+    # Load ANN weights into the custom SNN if available
+    weights_path = "models/DuelingDDQN_policy_net.pt"
     if os.path.exists(weights_path):
         print(f"Custom SNN: loading ANN weights from {weights_path}...")
         ann_state = torch.load(weights_path, map_location=device)
@@ -84,14 +94,13 @@ def main() -> None:
 
     agent.plot_durations = _noop_plot  # type: ignore[attr-defined]
 
-    print(f"Training snnTorch SNN (T=25) for {NUM_EPISODES} episodes...")
+    print(f"Training custom LIF SNN (T=20) for {NUM_EPISODES} episodes...")
     t0 = time.time()
     agent.steps_done = 0
     agent.episode_durations = []
     for ep in range(NUM_EPISODES):
         env.reset_game()
-        state_dict = env.getGameState()
-        state = torch.tensor(list(state_dict.values()), dtype=torch.float32, device=agent.device)
+        state = get_state_vector(env).to(agent.device)
         done = False
         steps = 0
         while not done:
@@ -100,15 +109,14 @@ def main() -> None:
             reward_t = torch.tensor([reward], device=agent.device)
             action_t = torch.tensor([action_idx], device=agent.device)
 
-            next_state_dict = env.getGameState()
-            next_state = torch.tensor(list(next_state_dict.values()), dtype=torch.float32, device=agent.device)
             done = env.game_over()
-            if done:
-                next_state = None
+            next_state = None if done else get_state_vector(env).to(agent.device)
 
-            agent.memory.cache((state, next_state, action_t, reward_t, done))
+            agent.cache_recall.cache(
+                (state.cpu(), None if next_state is None else next_state.cpu(), action_t.cpu(), reward_t.cpu(), done)
+            )
+
             state = next_state
-
             agent.optimize_model()
             agent.update_target_network()
 
@@ -128,10 +136,10 @@ def main() -> None:
             )
 
     t1 = time.time()
-    print(f"SNN training finished in {(t1 - t0)/60:.2f} minutes.")
+    print(f"Custom SNN training finished in {(t1 - t0)/60:.2f} minutes.")
 
     # -------------------------------
-    # 3. Plot SNN training curve
+    # 3. Plot custom SNN training curve
     # -------------------------------
     durations = torch.tensor(agent.episode_durations, dtype=torch.float)
 
@@ -148,21 +156,21 @@ def main() -> None:
             linewidth=2.0,
         )
 
-    plt.title("snnTorch SNN Training on Flappy Bird (T=25)")
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    plt.title("Custom LIF SNN Training on Flappy Bird (T=20)")
     plt.xlabel("Episode")
     plt.ylabel("Duration (steps)")
     plt.grid(alpha=0.2)
     plt.legend()
     plt.tight_layout()
-    plt.savefig("SNN_snnTorch_training.png")
-    print("Saved SNN training curve to SNN_snnTorch_training.png")
+    plt.savefig(f"plots/CustomSNN_training_{timestamp}.png")
+    print(f"Saved custom SNN training curve to CustomSNN_training_{timestamp}.png")
     
     # Save model weights
-    model_save_path = "SNN_snnTorch_policy_net.pt"
+      # e.g., 20251210_153045
+    model_save_path = f"models/CustomSNN_policy_net_{timestamp}.pt"
     torch.save(agent.policy_net.state_dict(), model_save_path)
-    print(f"Saved snnTorch SNN model weights to {model_save_path}")
-    
-    
+    print(f"Saved custom SNN model weights to {model_save_path}")
 
 
 if __name__ == "__main__":
