@@ -13,8 +13,41 @@ This repository contains implementations of ANN-based and SNN-based deep reinfor
 
 ### Requirements
 - Python 3.7+
-- See `requirements.txt` for dependencies
 
+### Setup Instructions
+
+1. **Clone or navigate to the repository:**
+   ```bash
+   cd path/to/flappy-bird-snn-ann
+   ```
+
+2. **Create a virtual environment:**
+   ```bash
+   python -m venv venv
+   ```
+
+3. **Activate the virtual environment:**
+   - On Linux/macOS:
+     ```bash
+     source venv/bin/activate
+     ```
+   - On Windows:
+     ```bash
+     venv\Scripts\activate
+     ```
+
+4. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Verify installation:**
+   ```bash
+   python -m scripts.eval_agents
+   ```
+   This will run a quick test to confirm everything is set up correctly.
+
+**Note:** The `PyGame-Learning-Environment/` directory (Flappy Bird game environment) is already installed and configured in this repository, so no additional setup is required for the game.
 
 ## Project Structure
 
@@ -48,7 +81,7 @@ This repository contains implementations of ANN-based and SNN-based deep reinfor
 │   ├── CustomSNN_training.png
 │   └── Flappy_Bird_edit.gif
 │
-├── PyGame-Learning-Environment/   # Flappy Bird game environment
+├── PyGame-Learning-Environment/   # Flappy Bird game environment (pre-configured)
 └── requirements.txt               # Python dependencies
 ```
 
@@ -63,7 +96,7 @@ python -m scripts.eval_agents
 ```
 
 This will:
-- Load the pre-trained ANN, snnTorch SNN, and custom LIF SNN models
+- Load the pre-trained ANN, snnTorch SNN, and custom LIF SNN models from the `models/` directory
 - Run 50 evaluation episodes for each agent
 - Print performance metrics (average score, steps, latency)
 - Save results to console
