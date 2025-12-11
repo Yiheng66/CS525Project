@@ -43,7 +43,7 @@ This repository contains implementations of ANN-based and SNN-based deep reinfor
 
 5. **Verify installation:**
    ```bash
-   python -m scripts.eval_agents
+   python -m scripts.eval_all_agents
    ```
    This will run a quick test to confirm everything is set up correctly.
 
@@ -55,25 +55,31 @@ This repository contains implementations of ANN-based and SNN-based deep reinfor
 ├── src/                           # Core implementation
 │   ├── model.py                   # ANN Dueling DQN architecture
 │   ├── agent.py                   # ANN training agent
-│   ├── snnmodel.py                # snnTorch-based SNN
+│   ├── snnmodel.py                # snnTorch-based SNN model
 │   ├── ssnagent.py                # snnTorch SNN training agent
+│   ├── ssnmain.py                 # snnTorch SNN main execution
 │   ├── ann2snnmodel.py            # Custom LIF SNN architecture
 │   ├── ann2snnagent.py            # Custom LIF SNN training agent
-│   └── ann2snnmain.py             # ANN-to-SNN weight transfer
+│   ├── ann2snnmain.py             # Custom LIF SNN main execution
+│   ├── MemoryRecall.py            # Utility for memory operations
+│   ├── printweights.py            # Utility for weight inspection
+│   └── main.py                    # General utilities
 │
 ├── scripts/                       # User-facing execution scripts
-│   ├── train_ddqn_plot.py         # Train ANN Dueling DDQN
-│   ├── train_snn_snnTorch_plot.py # Train snnTorch-based SNN
-│   ├── train_custom_snn_plot.py   # Train custom LIF SNN
-│   ├── eval_agents.py             # Evaluate all agents
-│   ├── measure_spike_activity.py  # Calculate spike statistics for energy analysis
+│   ├── train_ann.py               # Train ANN Dueling DDQN
+│   ├── train_snn_snntorch.py      # Train snnTorch-based SNN
+│   ├── train_snn_custom.py        # Train custom LIF SNN
+│   ├── eval_all_agents.py         # Evaluate all agents
+│   ├── measure_snn_spikes.py      # Calculate spike statistics for energy analysis
 │   └── eval_snn_T_sweep.py        # Evaluate SNNs across different timestep horizons
 │
 ├── models/                        # Pre-trained model checkpoints
-│   ├── DuelingDDQN_policy_net.pt  # Trained ANN policy network
-│   ├── DuelingDDQN_target_net.pt  # Trained ANN target network
-│   ├── CustomSNN_policy_net.pt    # Trained custom LIF SNN policy network
-│   └── SNN_snnTorch_policy_net.pt # Trained snnTorch SNN policy network
+│   ├── DuelingDDQN_policy_net.pt  # Trained ANN Dueling DDQN policy network
+│   ├── DuelingDDQN_target_net.pt  # Trained ANN Dueling DDQN target network
+│   ├── DuelingDQN_policy_net.pt   # Trained ANN Dueling DQN policy network
+│   ├── DuelingDQN_target_net.pt   # Trained ANN Dueling DQN target network
+│   ├── snn_custom_policy.pt       # Trained custom LIF SNN policy network
+│   └── snn_snntorch_policy.pt     # Trained snnTorch SNN policy network
 │
 ├── plots/                         # Generated training curves and results
 │   ├── DuelingDDQN_training.png
@@ -92,20 +98,20 @@ This repository contains implementations of ANN-based and SNN-based deep reinfor
 To evaluate all three pre-trained agents:
 
 ```bash
-python -m scripts.eval_agents
+python -m scripts.eval_all_agents
 ```
 
 This will:
 - Load the pre-trained ANN, snnTorch SNN, and custom LIF SNN models from the `models/` directory
 - Run 50 evaluation episodes for each agent
 - Print performance metrics (average score, steps, latency)
-- Save results to console
+- Display results to console
 
 ### Option 2: Train from Scratch
 
 #### Train the ANN Baseline
 ```bash
-python -m scripts.train_ddqn_plot
+python -m scripts.train_ann
 ```
 Trains a Dueling Double DQN agent for 2000 episodes. Saves:
 - Trained policy and target networks to `models/DuelingDDQN_*.pt`
@@ -113,24 +119,24 @@ Trains a Dueling Double DQN agent for 2000 episodes. Saves:
 
 #### Train the snnTorch-based SNN
 ```bash
-python -m scripts.train_snn_snnTorch_plot
+python -m scripts.train_snn_snntorch
 ```
 Trains an snnTorch SNN initialized from the pre-trained Dueling DDQN. Saves:
-- Trained networks to `models/SNN_snnTorch_*.pt`
+- Trained network to `models/snn_snntorch_policy.pt`
 - Training curve to `plots/SNN_snnTorch_training.png`
 
 #### Train the Custom LIF SNN
 ```bash
-python -m scripts.train_custom_snn_plot
+python -m scripts.train_snn_custom
 ```
 Trains a custom LIF SNN with surrogate gradients, initialized from the pre-trained Dueling DDQN. Saves:
-- Trained networks to `models/CustomSNN_*.pt`
+- Trained network to `models/snn_custom_policy.pt`
 - Training curve to `plots/CustomSNN_training.png`
 
 ### Option 3: Measure Spike Activity (For Energy Analysis)
 
 ```bash
-python -m scripts.measure_spike_activity
+python -m scripts.measure_snn_spikes
 ```
 
 This script:
@@ -151,15 +157,15 @@ Evaluates the custom LIF SNN with different T values to analyze latency vs. perf
 
 Currently, hyperparameters are hard-coded in the training scripts. To modify training behavior:
 
-1. **ANN Training** (`train_ddqn_plot.py`): Edit hyperparameters like learning rate, batch size, epsilon decay
-2. **SNN Training** (`train_snn_snnTorch_plot.py`, `train_custom_snn_plot.py`): Edit timesteps (T), leak factor (β), threshold (V_th)
-3. **Agent Evaluation** (`eval_agents.py`): Adjust number of evaluation episodes and episode length cap
+1. **ANN Training** (`train_ann.py`): Edit hyperparameters like learning rate, batch size, epsilon decay
+2. **SNN Training** (`train_snn_snntorch.py`, `train_snn_custom.py`): Edit timesteps (T), leak factor (β), threshold (V_th)
+3. **Agent Evaluation** (`eval_all_agents.py`): Adjust number of evaluation episodes and episode length cap
 
 See Tables I and II in the paper for default hyperparameter values.
 
 ## Expected Output
 
-### From `eval_agents.py`:
+### From `eval_all_agents.py`:
 ```
 ========== ANN (DDQN) Evaluation ==========
 Average Score: 57.0
@@ -177,7 +183,7 @@ Average Steps: 2000
 Inference Latency: 4.39 ms
 ```
 
-### From `measure_spike_activity.py`:
+### From `measure_snn_spikes.py`:
 ```
 Average firing rate (α) for snnTorch SNN: 0.10
 Average firing rate (α) for Custom LIF SNN: 0.03
