@@ -1,0 +1,6 @@
+matplotlib==3.10.7
+numpy==1.23.5
+ple==0.0.1
+pygame==2.6.1
+snntorch==0.9.4
+torch==2.3.1
