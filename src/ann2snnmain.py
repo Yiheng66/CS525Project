@@ -17,7 +17,6 @@ import torch
 # local imports
 import ann2snnagent
 
-raise ImportError("Cannot import model module. Ensure correct path.")
 def get_state_vector(env):
     """
     Extracts the game state features (8 values) instead of an image.
