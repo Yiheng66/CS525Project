@@ -10,7 +10,7 @@ sys.path.insert(0, "./PyGame-Learning-Environment")
 from ple import PLE  # type: ignore
 from ple.games.flappybird import FlappyBird  # type: ignore
 
-from eval_agents import (
+from eval_all_agents import (
     make_env,
     state_to_tensor,
     build_snn_agent,

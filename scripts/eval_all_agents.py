@@ -95,7 +95,7 @@ def build_snn_agent(input_dim: int, n_actions: int) -> ssnagent.SNNAgent:
     # snn_agent.target_net.eval()
     
     # Prefer custom SNN weights (trained via train_snn_snnTorch.py), fall back to ANN weights if needed.
-    custom_weights_path = "models/SNN_snnTorch_policy_net.pt"
+    custom_weights_path = "models/snn_snntorch_policy.pt"
     ann_weights_path = "models/DuelingDQN_policy_net.pt"
 
     if os.path.exists(custom_weights_path):
@@ -150,7 +150,7 @@ def build_custom_snn_agent(input_dim: int, n_actions: int) -> ann2snnagent.SNNAg
     )
 
     # Prefer custom SNN weights (trained via train_custom_snn_plot.py), fall back to ANN weights if needed.
-    custom_weights_path = "models/CustomSNN_policy_net.pt"
+    custom_weights_path = "models/snn_custom_policy.pt"
     ann_weights_path = "models/DuelingDQN_policy_net.pt"
 
     if os.path.exists(custom_weights_path):

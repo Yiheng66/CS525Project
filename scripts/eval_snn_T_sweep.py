@@ -11,7 +11,7 @@ sys.path.insert(0, "./PyGame-Learning-Environment")
 from ple import PLE  # type: ignore
 from ple.games.flappybird import FlappyBird  # type: ignore
 
-import ssnagent
+from src import ssnagent
 
 
 def make_env(display: bool = False) -> PLE:

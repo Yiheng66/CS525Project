@@ -11,7 +11,7 @@ from ple import PLE  # type: ignore
 from ple.games.flappybird import FlappyBird  # type: ignore
 from itertools import count
 
-import agent as ann_agent_mod
+from src import agent as ann_agent_mod
 
 
 def make_env(display: bool = False) -> PLE:

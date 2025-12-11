@@ -11,7 +11,7 @@ sys.path.insert(0, "./PyGame-Learning-Environment")
 from ple import PLE  # type: ignore
 from ple.games.flappybird import FlappyBird  # type: ignore
 
-import ssnagent
+from src import ssnagent
 
 
 def make_env(display: bool = False) -> PLE:
@@ -148,18 +148,17 @@ def main() -> None:
             linewidth=2.0,
         )
 
-    timestamp = time.strftime("%Y%m%d_%H%M%S")  # e.g., 20251210_153045
     plt.title("snnTorch SNN Training on Flappy Bird (T=25)")
     plt.xlabel("Episode")
     plt.ylabel("Duration (steps)")
     plt.grid(alpha=0.2)
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f"plots/SNN_snnTorch_training_{timestamp}.png")
-    print(f"Saved SNN training curve to SNN_snnTorch_training_{timestamp}.png")
+    plt.savefig(f"plots/snn_snntorch_training.png")
+    print(f"Saved SNN training curve to snn_snntorch_training.png")
     
     # Save model weights
-    model_save_path = f"models/SNN_snnTorch_policy_net_{timestamp}.pt"
+    model_save_path = f"models/snn_snntorch_policy.pt"
     torch.save(agent.policy_net.state_dict(), model_save_path)
     print(f"Saved snnTorch SNN model weights to {model_save_path}")
     
