@@ -26,7 +26,7 @@ def main() -> None:
     # -------------------------------
     # 1. Training configuration
     # -------------------------------
-    NUM_EPISODES = 500  # reduced for faster experiment
+    NUM_EPISODES = 200  # reduced for faster experiment
 
     env = make_env(display=False)
     state = env.getGameState()
