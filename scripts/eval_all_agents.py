@@ -99,15 +99,15 @@ def build_snn_agent(input_dim: int, n_actions: int) -> ssnagent.SNNAgent:
     ann_weights_path = "models/DuelingDQN_policy_net.pt"
 
     if os.path.exists(custom_weights_path):
-        print(f"Custom SNN: loading SNN weights from {custom_weights_path}...")
+        print(f"snnTorch SNN: loading SNN weights from {custom_weights_path}...")
         snn_state = torch.load(custom_weights_path, map_location=snn_agent.device)
         if not isinstance(snn_state, dict):
             snn_state = snn_state.state_dict()
         snn_agent.policy_net.load_state_dict(snn_state)
         snn_agent.target_net.load_state_dict(snn_state)
-        print("Custom SNN: loaded trained SNN policy/target networks.")
+        print("snnTorch SNN: loaded trained SNN policy/target networks.")
     elif os.path.exists(ann_weights_path):
-        print(f"Custom SNN: SNN weights not found; initialising from ANN weights at {ann_weights_path}...")
+        print(f"snnTorch SNN: SNN weights not found; initialising from ANN weights at {ann_weights_path}...")
         ann_state = torch.load(ann_weights_path, map_location=snn_agent.device)
         if not isinstance(ann_state, dict):
             ann_state = ann_state.state_dict()
@@ -120,9 +120,9 @@ def build_snn_agent(input_dim: int, n_actions: int) -> ssnagent.SNNAgent:
                 copied_count += 1
         snn_agent.policy_net.load_state_dict(snn_state)
         snn_agent.target_net.load_state_dict(snn_state)
-        print(f"Custom SNN: copied {copied_count} ANN layers into SNN policy/target networks.")
+        print(f"snnTorch SNN: copied {copied_count} ANN layers into SNN policy/target networks.")
     else:
-        print("Custom SNN: no pretrained weights found; evaluating from random initialisation.")
+        print("snnTorch SNN: no pretrained weights found; evaluating from random initialisation.")
 
     snn_agent.policy_net.eval()
     snn_agent.target_net.eval()

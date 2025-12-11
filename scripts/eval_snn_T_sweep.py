@@ -52,8 +52,16 @@ def evaluate_snn(T: int, episodes: int = 20, max_steps: int = 2000) -> None:
     )
 
     # Load the same checkpoint used in main experiments, if available
-    agent.load_checkpoint()
-    agent.policy_net.eval()
+    model_path = "models/snn_snntorch_policy.pt"
+    if os.path.exists(model_path):
+        print(f"snnTorch SNN: loading SNN weights from {model_path}...")
+        snn_state = torch.load(model_path, map_location=agent.device)
+        if not isinstance(snn_state, dict):
+            snn_state = snn_state.state_dict()
+        agent.policy_net.load_state_dict(snn_state)
+        agent.target_net.load_state_dict(snn_state)
+    else:
+        print(f"snnTorch SNN: no pretrained weights found at {model_path}; evaluating from random initialisation.")
 
     device = agent.device
 
