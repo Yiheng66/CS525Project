@@ -171,15 +171,6 @@ class SNN_DQN(nn.Module):
         if not return_spike_stats:
             return q_avg
 
-
-        hidden_neurons = 64 + 128 + 256 + 512 + 512
-        total_neuron_slots = batch * self.T * hidden_neurons
-        return q_avg, {
-            "total_spikes": total_spikes.item(),
-            "total_neuron_slots": int(total_neuron_slots),
-            "T": self.T,
-        }
-
         hidden_neurons = 64 + 128 + 256 + 512 + 512
         total_neuron_slots = batch * self.T * hidden_neurons
         return q_avg, {
