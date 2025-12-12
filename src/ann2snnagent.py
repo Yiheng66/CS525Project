@@ -157,11 +157,6 @@ class SNN_DQN(nn.Module):
                     spk1.sum() + spk2.sum() + spk3.sum() + spk4.sum() + spk5.sum()
                 )
 
-            if return_spike_stats:
-                total_spikes += (
-                    spk1.sum() + spk2.sum() + spk3.sum() + spk4.sum() + spk5.sum()
-                )
-
             if self.network_type == 'DuelingDQN':
                 state_val = self.state_values(spk5)
                 adv = self.advantages(spk5)
@@ -176,8 +171,6 @@ class SNN_DQN(nn.Module):
         if not return_spike_stats:
             return q_avg
 
-        if not return_spike_stats:
-            return q_avg
 
         hidden_neurons = 64 + 128 + 256 + 512 + 512
         total_neuron_slots = batch * self.T * hidden_neurons
